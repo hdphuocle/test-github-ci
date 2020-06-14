@@ -1,0 +1,89 @@
+
+stages:
+  - build
+#  - test
+#  - deploy
+
+variables:
+  VERSION: v1.0.5
+  CLUSTER_NAME: hdw-test-cluster
+  DEPLOYMENT_TYPE: 'qa'
+  IMAGE_NAME: https-test
+  CONTAINER_DEV_IMAGE: $REGISTRY/precise/$IMAGE_NAME
+  REPLICAS: "1"
+  PORT: "80"
+  RELEASE_NAME: https-test
+  TEST: phuoc
+  REF_NAME: develop
+  APP_NAME: plat-ra-lib
+
+build:
+  stage: build
+  tags:
+    - deploy
+  script:
+    - docker build -t $CONTAINER_DEV_IMAGE:$VERSION .
+    - docker push $CONTAINER_DEV_IMAGE:$VERSION
+    - docker rmi -f $(docker images $CONTAINER_DEV_IMAGE -q)
+    - echo "Echo run build"
+#    - echo $TEST
+#    - export MW_VERSION=$(npm view $APP_NAME versions | grep $VERSION | wc -l)
+#    - echo $MW_VERSION
+  #    - curl -X POST -F token=$TOKEN -F ref=$REF_NAME https://gitlab.com/api/v4/projects/12925774/trigger/pipeline
+  only:
+    - develop
+
+
+#build:
+#  stage: build
+#  tags:
+#    - deploy
+#  script:
+#    #    - docker build -t $CONTAINER_DEV_IMAGE:$VERSION .
+#    #    - docker push $CONTAINER_DEV_IMAGE:$VERSION
+#    #    - docker rmi -f $(docker images $CONTAINER_DEV_IMAGE -q)
+#    - curl --request POST \
+#      --form token=TOKEN \
+#      --form ref=master \
+#      --form "variables[UPLOAD_TO_S3]=true" \
+#      https://gitlab.example.com/api/v4/projects/9/trigger/pipeline
+#  only:
+#    - develop
+#cache:
+#  paths:
+#    - node_modules/
+
+#build:
+#  stage: build
+#  tags:
+#    - lint
+#  script:
+#    - echo "Echo run build"
+#
+#test:
+#  stage: test
+#  tags:
+#    - test
+#  script:
+#    - echo "Echo run test"
+#
+job:
+  stage: test
+  before_script:
+    - npm install
+  script:
+    - echo "Next Step"
+
+
+#deploy:
+#  stage: deploy
+#  tags:
+#    - deploy
+#  environment:
+#    name: develop
+#  script:
+#      - gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE --project $PROJECT_PRODUCTION_ID
+#      - export DEPLOYS=$(helm ls | grep ${RELEASE_NAME} | wc -l)
+#      - if [ ${DEPLOYS} == 0 ]; then helm install cbpo-repo/bpo-chart --name=$RELEASE_NAME; else helm upgrade $RELEASE_NAME cbpo-repo/bpo-chart --values values.yml; fi
+#  only:
+#    - develop
